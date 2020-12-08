@@ -1,6 +1,7 @@
 from day8i import day8
 from itertools import *
 from copy import deepcopy
+import time
 
 test_input = r'''nop +0
 acc +1
@@ -55,17 +56,18 @@ def to_loop_or_not_to_loop(instructions):  # searches for first possible instruc
     while not found:
         for number in range(0, len(instructions)):
             command, value = instructions[number]
-            changed_instructions = deepcopy(instructions)
             if command == 'acc':
                 continue
             else:
 
-                if command == 'jmp':
-                    changed_instructions[number][0] = 'nop'
+                if command == 'jmp':  # change 'number' indexed value, try it, change value back to before
+                    instructions[number][0] = 'nop'
+                    accumulator_value, is_loop = boot_operator(instructions)
+                    instructions[number][0] = 'jmp'
                 else:
-                    changed_instructions[number][0] = 'jmp'
-
-                accumulator_value, is_loop = boot_operator(changed_instructions)
+                    instructions[number][0] = 'jmp'
+                    accumulator_value, is_loop = boot_operator(instructions)
+                    instructions[number][0] = 'nop'
 
                 if not is_loop:
                     found = True
@@ -75,4 +77,6 @@ def to_loop_or_not_to_loop(instructions):  # searches for first possible instruc
 
 
 if __name__ == '__main__':
+    start = time.time()
     print('Result:', to_loop_or_not_to_loop(clean_input(day8)))  # part 2 result
+    print('Time:', time.time()-start)
