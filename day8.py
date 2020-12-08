@@ -13,15 +13,16 @@ jmp -4
 acc +6'''
 
 
-def clean_input(some_input):
+def clean_input(some_input):  # returns input as list of lists (each contains [command, value])
     input_to_return = []
     for row in some_input.split('\n'):
-        x = row.split()
-        input_to_return.append(x)
+        row_as_list = row.split()
+        row_as_list[1] = int(row_as_list[1])
+        input_to_return.append(row_as_list)
     return input_to_return
 
 
-def boot_operator(code):
+def boot_operator(instructions):  # returns (achieved accumulator value or None, True if loop else False)
     i = 0
     indexes_list = []
     accumulator_value = 0
@@ -32,36 +33,37 @@ def boot_operator(code):
             indexes_list.append(i)
 
         try:
-            if code[i][0] == 'acc':
-                accumulator_value += int(code[i][1])
+            current_command, current_value = instructions[i]
+            if current_command == 'acc':
+                accumulator_value += current_value
                 i += 1
-            elif code[i][0] == 'jmp':
-                i += int(code[i][1])
+            elif current_command == 'jmp':
+                i += current_value
             else:
                 i += 1
         except IndexError:
-            if i >= len(code):
+            if i == len(instructions):
                 return accumulator_value, False
             else:
                 return None, True
 
 
-def to_loop_or_not_to_loop(instructions):
-    accumulator_value = 0
+def to_loop_or_not_to_loop(instructions):  # searches for first possible instructions with one changed jmp <=> nop
+    accumulator_value = 0                  # exactly one is changed during every try
     found = False
 
     while not found:
-        for x in range(0, len(instructions)):
-            instruction = instructions[x]
+        for number in range(0, len(instructions)):
+            command, value = instructions[number]
             changed_instructions = deepcopy(instructions)
-            if instruction[0] == 'acc':
+            if command == 'acc':
                 continue
             else:
 
-                if instruction[0] == 'jmp':
-                    changed_instructions[x][0] = 'nop'
+                if command == 'jmp':
+                    changed_instructions[number][0] = 'nop'
                 else:
-                    changed_instructions[x][0] = 'jmp'
+                    changed_instructions[number][0] = 'jmp'
 
                 accumulator_value, is_loop = boot_operator(changed_instructions)
 
@@ -73,4 +75,4 @@ def to_loop_or_not_to_loop(instructions):
 
 
 if __name__ == '__main__':
-    print('Result:', to_loop_or_not_to_loop(clean_input(day8)))
+    print('Result:', to_loop_or_not_to_loop(clean_input(day8)))  # part 2 result
